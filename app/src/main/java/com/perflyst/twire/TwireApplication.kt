@@ -28,6 +28,7 @@ import io.sentry.protocol.Device
 import io.sentry.protocol.OperatingSystem
 import org.parceler.Parcel
 import org.parceler.ParcelClass
+import com.perflyst.twire.misc.FileLoggingTree
 import timber.log.Timber
 import timber.log.Timber.DebugTree
 
@@ -39,6 +40,12 @@ class TwireApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         Timber.plant(DebugTree())
+
+        // In debug builds, also log errors to a file for easier debugging
+        if (BuildConfig.DEBUG) {
+            Timber.plant(FileLoggingTree(this))
+            Timber.i("Debug file logging enabled: ${FileLoggingTree.getLogFilePath(this)}")
+        }
 
         if (!BuildConfig.DEBUG) {
             SentryAndroid.init(this) { options: SentryAndroidOptions? ->

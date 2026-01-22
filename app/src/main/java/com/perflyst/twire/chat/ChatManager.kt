@@ -397,7 +397,8 @@ class ChatManager(aChannel: UserInfo, aVodId: String?, vodOffset: Int, aCallback
 
     private fun randomColor(username: String): String? {
         val colors: Array<NamedUserChatColor?> = NamedUserChatColor.entries.toTypedArray()
-        return colors[username.hashCode() % colors.size]!!.hexCode
+        // Use floorMod to handle negative hashCode values (hashCode can be negative!)
+        return colors[Math.floorMod(username.hashCode(), colors.size)]!!.hexCode
     }
 
     @EventSubscriber

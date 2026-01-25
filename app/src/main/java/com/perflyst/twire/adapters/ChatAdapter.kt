@@ -90,7 +90,7 @@ class ChatAdapter(
                     Utils.appendSpan(builder, "  ", badgeSpan).append(" ")
                 }
 
-                val nameColor = getNameColor(message.color)
+                val nameColor = getNameColor(message.color, message.isHighlight)
                 Utils.appendSpan(
                     builder,
                     message.name,
@@ -226,7 +226,7 @@ class ChatAdapter(
         return messages.size
     }
 
-    private fun getNameColor(colorFromAPI: String?): Int {
+    private fun getNameColor(colorFromAPI: String?, isHighlight: Boolean = false): Int {
         val parsedColor = runCatching { colorFromAPI?.toColorInt() }
             .onFailure { Timber.e(it, "Failed to parse color: \"$colorFromAPI\"") }
             .getOrNull()
@@ -243,6 +243,16 @@ class ChatAdapter(
         val whiteText = "#FFFFFF"
         if (colorFromAPI == whiteText && !isNightTheme) {
             return ContextCompat.getColor(context, R.color.blue_700)
+        }
+
+        // When highlighted, ensure name color has enough contrast with the accent background.
+        if (isHighlight) {
+            val accentColor = Service.getColorAttribute(
+                androidx.appcompat.R.attr.colorAccent,
+                R.color.accent,
+                context
+            )
+            return Utils.ensureContrast(parsedColor, accentColor)
         }
 
         return parsedColor

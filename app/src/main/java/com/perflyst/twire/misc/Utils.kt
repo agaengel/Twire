@@ -1,9 +1,11 @@
 package com.perflyst.twire.misc
 
+import android.graphics.Color
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.text.format.DateUtils
 import android.widget.TextView
+import androidx.annotation.ColorInt
 import androidx.annotation.FloatRange
 import java.io.UnsupportedEncodingException
 import java.net.MalformedURLException
@@ -14,6 +16,47 @@ import java.text.NumberFormat
 import java.util.Locale
 
 object Utils {
+
+    /**
+     * Calculates the contrast ratio between two colors using the WCAG formula.
+     * A ratio of 3.0 or higher is considered readable for large text.
+     * A ratio of 4.5 or higher is recommended for normal text.
+     *
+     * @param color1 First color
+     * @param color2 Second color
+     * @return Contrast ratio (1.0 to 21.0)
+     */
+    fun calculateContrast(@ColorInt color1: Int, @ColorInt color2: Int): Double {
+        val lum1 = Color.luminance(color1).toDouble()
+        val lum2 = Color.luminance(color2).toDouble()
+        val lighter = maxOf(lum1, lum2)
+        val darker = minOf(lum1, lum2)
+        return (lighter + 0.05) / (darker + 0.05)
+    }
+
+    /**
+     * Returns a color that has sufficient contrast against the given background.
+     * If the foreground color already has enough contrast, it is returned unchanged.
+     * Otherwise, black or white is returned depending on the background luminance.
+     *
+     * @param foreground The desired foreground color
+     * @param background The background color to check against
+     * @param minContrast Minimum contrast ratio required (default 3.0 for large text)
+     * @return A color with sufficient contrast
+     */
+    fun ensureContrast(
+        @ColorInt foreground: Int,
+        @ColorInt background: Int,
+        minContrast: Double = 3.0
+    ): Int {
+        val contrast = calculateContrast(foreground, background)
+        if (contrast >= minContrast) {
+            return foreground
+        }
+        // Use black or white depending on background luminance
+        val backgroundLuminance = Color.luminance(background)
+        return if (backgroundLuminance > 0.5f) Color.BLACK else Color.WHITE
+    }
     val systemLanguage: String
         get() = Locale.getDefault().language
 

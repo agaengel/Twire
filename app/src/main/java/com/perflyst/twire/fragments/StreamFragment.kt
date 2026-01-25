@@ -58,6 +58,7 @@ import androidx.media3.common.MediaItem.LiveConfiguration
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
+import androidx.media3.exoplayer.source.BehindLiveWindowException
 import androidx.media3.common.Player.PositionInfo
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.common.util.Util
@@ -492,6 +493,14 @@ class StreamFragment : Fragment(), Player.Listener {
 
     override fun onPlayerError(exception: PlaybackException) {
         Timber.e(exception, "Something went wrong playing the stream")
+
+        // BehindLiveWindowException occurs when the player falls too far behind the live edge.
+        // Instead of failing, seek back to the live edge and continue playback.
+        if (exception.cause is BehindLiveWindowException) {
+            player?.seekToDefaultPosition()
+            player?.prepare()
+            return
+        }
 
         playbackFailed()
     }

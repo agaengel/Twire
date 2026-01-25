@@ -5,6 +5,7 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("kotlin-parcelize")
     id("io.sentry.android.gradle") version "5.3.0"
+    id("org.jetbrains.kotlinx.kover") version "0.8.3"
 }
 
 android {
@@ -73,6 +74,17 @@ android {
     kotlinOptions {
         jvmTarget = "11"
     }
+
+    kover {
+        reports {
+            total {
+                // This ensures both unit tests and instrumented tests are counted
+                xml { onCheck = true }
+                html { onCheck = true }
+            }
+        }
+    }
+
 }
 
 dependencies {
